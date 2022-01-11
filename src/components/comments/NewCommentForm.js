@@ -7,7 +7,7 @@ import classes from "./NewCommentForm.module.css";
 
 const NewCommentForm = (props) => {
     const commentTextRef = useRef();
-    const { sendRequest, status, data: commentAdded, error } = useHttp(addComment);
+    const { sendRequest, status, error } = useHttp(addComment);
 
     const submitFormHandler = (event) => {
         event.preventDefault();
