@@ -1,29 +1,54 @@
-import { useRef } from 'react';
+import { useEffect, useRef } from "react";
+import useHttp from "../../hooks/use-http";
+import { addComment } from "../../lib/api";
+import LoadingSpinner from "../UI/LoadingSpinner";
 
-import classes from './NewCommentForm.module.css';
+import classes from "./NewCommentForm.module.css";
 
 const NewCommentForm = (props) => {
-  const commentTextRef = useRef();
+    const commentTextRef = useRef();
+    const { sendRequest, status, data: commentAdded, error } = useHttp(addComment);
 
-  const submitFormHandler = (event) => {
-    event.preventDefault();
+    const submitFormHandler = (event) => {
+        event.preventDefault();
+        // optional: Could validate here
+        if (commentTextRef.current.value.trim() !== "") {
+            // send comment to server
+            sendRequest({
+                quoteId: props.quoteId,
+                commentData: {
+                    text: commentTextRef.current.value,
+                },
+            })
+        }
+    };
 
-    // optional: Could validate here
+    const onCommentAdd = props.onCommentAdd;
 
-    // send comment to server
-  };
+    useEffect(() => {
+        if (status === "completed" && !error) {
+            onCommentAdd();
+        }
+    }, [status, error, onCommentAdd]);
 
-  return (
-    <form className={classes.form} onSubmit={submitFormHandler}>
-      <div className={classes.control} onSubmit={submitFormHandler}>
-        <label htmlFor='comment'>Your Comment</label>
-        <textarea id='comment' rows='5' ref={commentTextRef}></textarea>
-      </div>
-      <div className={classes.actions}>
-        <button className='btn'>Add Comment</button>
-      </div>
-    </form>
-  );
+    return (
+        <>
+            {status === "pending" && <LoadingSpinner />}
+            {status !== "pending" && (
+                <form className={classes.form} onSubmit={submitFormHandler}>
+                    <div className={classes.control} onSubmit={submitFormHandler}>
+                        <label htmlFor="comment">Your Comment</label>
+                        <textarea id="comment" rows="5" ref={commentTextRef}></textarea>
+                    </div>
+                    <div className={classes.actions}>
+                        <button className="btn" type="submit">
+                            Add Comment
+                        </button>
+                    </div>
+                </form>
+            )}
+        </>
+    );
 };
 
 export default NewCommentForm;
